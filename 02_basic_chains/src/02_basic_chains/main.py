@@ -1,23 +1,29 @@
-from typing import Dict
+from typing import Dict, Literal
+from pydantic import BaseModel
 
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnableSequence, RunnableLambda, RunnableParallel
+from langchain_core.runnables import RunnableBranch, RunnableSequence, RunnableLambda, RunnableParallel
 from langchain.chat_models import init_chat_model
 
+
+
 #########################################################################
 #########################################################################
 
-# Chain with Parallel Outputs
+# Chain with Conditional Output Chains
 
 ## TASK I - Get User Prompt
 
 dynamic_prompt_template = ChatPromptTemplate([
-    ("system", "You are a technology journalist that creates social media posts."),
-    ("human", "Please summarize the following technology: {input}")
+    ("system", "You are a technology review evaluator."),
+    ("human", "Please categorize the following technology review as positive or negative: {input}")
 ])
 
 ## TASK II - Prompt LLM
+
+class output_schema(BaseModel):
+    review_sentiment: Literal["positive", "negative"]
 
 llm_model = init_chat_model(
     model_provider="openai",
@@ -28,21 +34,35 @@ llm_model = init_chat_model(
     api_key="ollama",
 )
 
-## TASK III - Output parsing
+llm_model_with_structured_output = llm_model.with_structured_output(output_schema)
 
-output_parser = StrOutputParser()
+# # DEBUG
+# result = llm_model_with_structured_output.invoke("This technology stack is stupid! I hate it so much....")
+# print(result)
+# print(type(result))
+# print(result.model_dump())
+# print(result.model_dump()["review_sentiment"])
 
-# Task IV - Dictinary maker
+# Task IV - Return the "positiv" / "negative" string only
 
-def dictionary_maker(text: str) -> Dict:
-    return {"text": text}
+def pydantic_json(input: output_schema) -> str:
+    print(input)
+    print(type(input))
+    return input.model_dump()["review_sentiment"]
 
-runable_dictionary_maker = RunnableLambda(dictionary_maker)
+# # DEBUG
+# result = llm_model_with_structured_output.invoke("This technology stack is stupid! I hate it so much....")
+# print(result)
+# print(type(result))
+# parsed = pydantic_json(result)
+# print(parsed)
+
+runable_pydantic_json = RunnableLambda(pydantic_json)
 
 #########################################################################
 #########################################################################
 
-# Parallel Output Chain I
+# Parallel Conditional Output Chain "positive"
 
 # Task Ia - Apply post template
 
@@ -83,8 +103,6 @@ linkedin_sequence = RunnableSequence(
 
 def twitter_chain(text: dict):
 
-    text = text["text"]
-
     # Task Ia - Apply post template
 
     twitter_prompt = ChatPromptTemplate.from_messages(
@@ -124,37 +142,22 @@ twitter_chain_runable = RunnableLambda(twitter_chain)
 #########################################################################
 #########################################################################
 
-# Complete Chain Orchestration
+# Conditional Chain Orchestration
+
+conditional_chain = RunnableBranch(
+    (lambda x: "positive" in x, linkedin_sequence),
+    twitter_chain_runable
+)
 
 complete_sequence = RunnableSequence(
     dynamic_prompt_template,
-    llm_model,
-    output_parser,
-    runable_dictionary_maker,
-    RunnableParallel(
-        branches = {
-            "linkedin": linkedin_sequence,
-            "twitter": twitter_chain_runable
-        })
+    llm_model_with_structured_output,
+    runable_pydantic_json,
+    conditional_chain
 
 )
 
-# Additional Post-Processing running the complete chain as runable
-
-def beautify_output(chain_output: dict) -> dict:
-    linkedin_response = chain_output["branches"]["linkedin"]
-    twitter_response = chain_output["branches"]["twitter"]
-
-    return {"linkedin": linkedin_response, "twitter": twitter_response}
-
-beautify_output_runnable = RunnableLambda(beautify_output)
-
-post_sequence = RunnableSequence(
-    complete_sequence,
-    beautify_output_runnable
-
-)
 
 print(
-   post_sequence.invoke({"input": "Write 1 paragraph long summary to introduce the library LangGraph and what it brings to the table on top of LangChain."})
+   complete_sequence.invoke({"input": "This technology stack is great! I love it so much...."})
 )
