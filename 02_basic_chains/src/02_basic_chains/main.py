@@ -1,5 +1,6 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableSequence
 from langchain.chat_models import init_chat_model
 
 
@@ -23,12 +24,17 @@ llm_model = init_chat_model(
 
 # TASK III - Output parsing
 
-str_parser = StrOutputParser()
+output_parser = StrOutputParser()
 
 # Chain Invocation
+# chain = dynamic_prompt_template | llm_model | str_parser
 
-chain = dynamic_prompt_template | llm_model | str_parser
+sequence = RunnableSequence(
+    dynamic_prompt_template,
+    llm_model,
+    output_parser
+)
 
 print(
-    chain.invoke({"input": "Write a Haiku about the television series Battlestar Galactica."})
+    sequence.invoke({"input": "Write a Haiku about the television series Buffy the Vampire Slayer."})
 )
