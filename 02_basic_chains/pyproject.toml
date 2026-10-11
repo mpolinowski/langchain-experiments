@@ -7,7 +7,11 @@ authors = [
     { name = "Mike Polinowski", email = "mpolinowski@gmail.com" }
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "langchain>=1.4.4",
+    "langchain-core>=1.6.9",
+    "langchain-openai>=1.7.0",
+]
 
 [project.scripts]
 02-basic-chains = "02_basic_chains:main"
