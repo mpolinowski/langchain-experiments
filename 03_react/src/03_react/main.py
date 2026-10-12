@@ -61,4 +61,4 @@ model = ChatOpenAI(
 
 # Manual Tool-binding
 model_with_tools = model.bind_tools(tools=ToolKit)
-model_with_tools.invoke("Tell me the population number of the capital of Malta")
+print(model_with_tools.invoke("Tell me the population number of the capital of Malta"))
