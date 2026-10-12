@@ -25,18 +25,18 @@ def email_tool(query: str) -> str:
 # EXAMPLE TOOL 4 - Custom Slack Tool
 
 @tool
-def slack_tool(query: str) -> str:
-    '''This is a tool to send Slack notifications to employees'''
-    return "Slack Notifications Sent!"
+def get_population_tool(country_query: str) -> str:
+    '''This is a tool that returns the population of capital cities of countries the world, e.g. send "Malta" as query and the urban population of "Valletta"'''
+    if country_query == "Malta":
+        return "The population of the capital city of Malta, Valetta, is 480134"
+    else:
+        return "Unknown"
 
 # Reasoning Chain Invocation (China-net does not allow DDG or Wikipedia ~ so only mock-tool run)
 
-ToolKit = [email_tool, slack_tool]
+ToolKit = [email_tool, get_population_tool]
 # # DEBUG
 # print(f"Registered Tools: {ToolKit}")
-
-
-# ReAct Agent
 
 model = ChatOpenAI(
     model="qwen3.8:latest",
@@ -46,15 +46,19 @@ model = ChatOpenAI(
     api_key="ollama"
 )
 
-agent = create_agent(model, tools=ToolKit)
 
-# Agent Invocation
+# # Agent Invocation
+# agent = create_agent(model, tools=ToolKit)
+# user_query = "Tell me the population number of the capital of Malta."
 
-user_query = "Tell me the population number of the capital of Malta."
+# events = agent.stream(
+#     {"messages": [{"user": user_query}]},
+#     stream_mode="values"
+# )
+# for event in events:
+#     event["messages"][-1].pretty_print()
 
-events = agent.stream(
-    {"messages": [{"user": user_query}]},
-    stream_mode="values"
-)
-for event in events:
-    event["messages"][-1].pretty_print()
+
+# Manual Tool-binding
+model_with_tools = model.bind_tools(tools=ToolKit)
+model_with_tools.invoke("Tell me the population number of the capital of Malta")
