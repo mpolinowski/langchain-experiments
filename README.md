@@ -14,6 +14,34 @@
 
 ---
 
+# Just Imagine
+
+> You have an INSTAR Surveillance Camera system that uploads alarm events into an SQL database and you really need to know if a car with the license plate `SU:GB:678` has been detected somewhere on your property. Here comes the power of RAG - retrieval augmented generation. Ask your AI agent and it will find the information for you. All thanks to Python LangChain!
+
+
+```bash
+================================ Human Message =================================
+
+Has the license plate SU:GB:678 been detected in an alarm event?
+================================== Ai Message ==================================
+
+Let me look into the database to check for this license plate. I'll start by exploring the available tables.
+Tool Calls:
+
+Yes, the license plate **SU:GB:678** has been detected in an alarm event. Here are the details:
+
+| Field | Value |
+|---|---|
+| **Event ID** | 1 |
+| **Time** | Mon Oct 12, 06:39:16 AM HKT 2026 |
+| **Alarm Name** | Motion Detected |
+| **Trigger** | Motion Area 1 |
+| **Face ID** | 0 (no face detected) |
+| **License Plate** | SU:GB:678 |
+
+It was flagged by the **Motion Area 1** sensor, and no face ID was associated with this event.
+```
+
 ## 🛠️ What is LangChain used for?
 
 **LangChain** is the glue between a raw LLM and a useful application. It wraps chat
@@ -44,9 +72,9 @@ This repo is that stack in miniature: **talk to a model** → **chain it** → *
 
 | 📁 Repo | What's inside | 🎯 Takeaway |
 | :-- | :-- | :-- |
-| **01_getting_to_know_langchain** 🗣️ | `init_chat_model(...)` pointed at a local Ollama (OpenAI-compatible). A Star-Trek system+human prompt (Worf tells a joke) answered through `with_structured_output(Pydantic)`, then the result's **type** and **fields** are printed. | The **hello world**: one chat model + **structured output** in a single `.invoke()`. |
-| **02_basic_chains** 🔗 | An **LCEL** pipeline (`ChatPromptTemplate → structured-out LLM → parser → RunnableBranch`). It first classifies a tech review as *positive / negative*, then **branches**: positive → a **LinkedIn post** (senior experts), else a **Gen-Z Twitter post**. | **Chaining runnables** and **conditional branching** on a structured signal. |
-| **03_react** 🕵️ | **Tools + agents.** Web tools (`DuckDuckGoSearchRun`, `WikipediaQueryRun`) and custom `@tool`s (a mock "email" + a capital-city population lookup) bound with `.bind_tools()`. Plus a `create_agent` **ReAct** loop over a seeded **SQLite** `events.db` via `SQLDatabaseToolkit`, screening for a license plate. | **ReAct agents**: bind tools, let the model *choose* them — including a real SQL toolkit. |
+| [01_getting_to_know_langchain](https://mpolinowski.github.io/docs/IoT-and-Machine-Learning/ML/2026-10-10--langchain-experiments/2026-10-10) 🗣️ | `init_chat_model(...)` pointed at a local Ollama (OpenAI-compatible). A Star-Trek system+human prompt (Worf tells a joke) answered through `with_structured_output(Pydantic)`, then the result's **type** and **fields** are printed. | The **hello world**: one chat model + **structured output** in a single `.invoke()`. |
+| [02_basic_chains](https://mpolinowski.github.io/docs/IoT-and-Machine-Learning/ML/2026-10-11--langchain-digging-deeper/2026-10-11) 🔗 | An **LCEL** pipeline (`ChatPromptTemplate → structured-out LLM → parser → RunnableBranch`). It first classifies a tech review as *positive / negative*, then **branches**: positive → a **LinkedIn post** (senior experts), else a **Gen-Z Twitter post**. | **Chaining runnables** and **conditional branching** on a structured signal. |
+| [03_react](https://mpolinowski.github.io/docs/IoT-and-Machine-Learning/ML/2026-10-12--langchain-react-agents/2026-10-12) 🕵️ | **Tools + agents.** Web tools (`DuckDuckGoSearchRun`, `WikipediaQueryRun`) and custom `@tool`s (a mock "email" + a capital-city population lookup) bound with `.bind_tools()`. Plus a `create_agent` **ReAct** loop over a seeded **SQLite** `events.db` via `SQLDatabaseToolkit`, screening for a license plate. | **ReAct agents**: bind tools, let the model *choose* them — including a real SQL toolkit. |
 
 ---
 
